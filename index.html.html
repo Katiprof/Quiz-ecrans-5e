@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission écrans – Test de 5e</title>
+<style>
+:root{
+  --ink:#24324a; --muted:#667085; --bg:#f5f7fb; --card:#fff;
+  --accent:#6c63ff; --accent2:#ff7aa2; --good:#35b779; --warning:#ffb347;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#eef0ff,#fff3f7);color:var(--ink);min-height:100vh}
+.wrap{max-width:850px;margin:auto;padding:28px 18px 50px}
+.hero{background:var(--card);border-radius:28px;padding:28px;text-align:center;box-shadow:0 12px 35px rgba(36,50,74,.12)}
+.badge{display:inline-block;background:#eceaff;color:#5148d9;padding:7px 12px;border-radius:999px;font-weight:700;font-size:13px}
+h1{font-size:34px;margin:14px 0 8px}
+.subtitle{font-size:17px;color:var(--muted);line-height:1.5}
+.notice{margin-top:18px;background:#fff7df;border-left:5px solid var(--warning);padding:12px 15px;border-radius:12px;text-align:left;font-size:14px;line-height:1.45}
+#quiz{margin-top:20px}
+.qcard{display:none;background:#fff;border-radius:24px;padding:25px;box-shadow:0 10px 28px rgba(36,50,74,.10)}
+.qcard.active{display:block}
+.progress{height:10px;background:#e8ebf2;border-radius:99px;overflow:hidden;margin-bottom:20px}
+.bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.3s}
+.qnum{color:var(--accent);font-weight:800;font-size:14px}
+h2{font-size:23px;line-height:1.25;margin:9px 0 18px}
+.option{display:block;width:100%;border:2px solid #e5e7ee;background:#fafbfe;border-radius:16px;padding:14px 16px;margin:10px 0;text-align:left;font-size:16px;cursor:pointer;transition:.15s}
+.option:hover{border-color:#aaa4ff;transform:translateY(-1px)}
+.option.selected{border-color:var(--accent);background:#f0efff}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:20px}
+button{border:0;border-radius:14px;padding:12px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.back{background:#edf0f5;color:#445}
+.next{background:var(--accent);color:white}
+.next:disabled{opacity:.45;cursor:not-allowed}
+#result{display:none;background:#fff;border-radius:28px;padding:28px;box-shadow:0 12px 35px rgba(36,50,74,.12);text-align:center}
+.emoji{font-size:64px}
+.profile{font-size:28px;margin:8px 0}
+.score{font-size:18px;color:var(--muted)}
+.meter{height:18px;background:#e8ebf2;border-radius:99px;overflow:hidden;margin:18px 0}
+.meter span{display:block;height:100%;background:linear-gradient(90deg,var(--good),var(--warning),var(--accent2));width:0}
+.tip{background:#f7f7ff;border-radius:18px;padding:17px;text-align:left;margin-top:18px;line-height:1.55}
+.tip strong{display:block;margin-bottom:6px}
+.reset{margin-top:18px;background:#24324a;color:#fff}
+.small{font-size:13px;color:var(--muted);margin-top:18px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <span class="badge">MISSION 5e · VIE DE CLASSE</span>
+    <h1>📱 Es-tu maître de tes écrans ?</h1>
+    <div class="subtitle">Un petit test pour observer tes habitudes numériques.<br>Il n’y a pas de « bonne » ou de « mauvaise » personnalité !</div>
+    <div class="notice">💡 Réponds le plus honnêtement possible. Ce test ne pose aucun diagnostic : il sert simplement à réfléchir à la place des écrans dans ton quotidien.</div>
+  </section>
+
+  <div id="quiz"></div>
+
+  <section id="result">
+    <div class="emoji" id="rEmoji"></div>
+    <div class="profile" id="rTitle"></div>
+    <div class="score" id="rScore"></div>
+    <div class="meter"><span id="meter"></span></div>
+    <div class="tip" id="rText"></div>
+    <button class="reset" onclick="restart()">🔄 Refaire le test</button>
+    <div class="small">À retenir : les écrans peuvent être utiles et amusants. L’objectif est de garder un équilibre entre écrans, sommeil, travail, activités et relations.</div>
+  </section>
+</div>
+
+<script>
+const questions = [
+["Quand tu t’ennuies…",[
+"Je trouve autre chose à faire : lire, dessiner, jouer, discuter…",
+"Je vais parfois voir ce qu’il se passe sur un écran.",
+"Je prends presque automatiquement mon téléphone ou ma tablette.",
+"Je peux rester longtemps sur un écran sans voir le temps passer."
+]],
+["Le matin, juste après ton réveil…",[
+"Je me prépare tranquillement sans regarder d’écran.",
+"Je regarde parfois l’heure ou un message.",
+"Je vérifie rapidement mes notifications.",
+"Je commence ma journée en regardant des vidéos ou en faisant défiler des contenus."
+]],
+["Pendant un repas…",[
+"Je profite du repas et je laisse mon écran de côté.",
+"Je garde mon téléphone près de moi, mais je ne le regarde presque pas.",
+"Je regarde parfois mes notifications.",
+"Je mange souvent en regardant un écran."
+]],
+["Quand quelqu’un te dit « encore deux minutes et tu arrêtes »…",[
+"J’arrête sans problème.",
+"Je négocie parfois un tout petit peu.",
+"Je dis souvent « encore cinq minutes ! »",
+"Les cinq minutes deviennent facilement vingt ou trente…"
+]],
+["Le soir avant de dormir…",[
+"Je pose mes écrans et je passe à autre chose.",
+"Je regarde parfois quelque chose avant de dormir.",
+"Je consulte souvent mes messages ou mes vidéos.",
+"Je reste sur un écran jusqu’à très tard."
+]],
+["Si tu oublies ton téléphone quelque part…",[
+"Pas grave ! Je peux très bien faire sans.",
+"Ça m’embête, mais je continue ma journée.",
+"Je pense souvent à aller le récupérer.",
+"Je me sens vraiment stressé(e) et j’ai du mal à penser à autre chose."
+]],
+["Quand tu fais tes devoirs, ton téléphone est à côté de toi…",[
+"Je préfère le laisser de côté pour rester concentré(e).",
+"Je regarde parfois s’il y a un message.",
+"Je consulte assez souvent mes notifications.",
+"Je finis facilement par faire autre chose sur mon téléphone au lieu de travailler."
+]],
+["Si tu dois choisir une activité pour une heure libre…",[
+"Sport, balade, dessin, lecture, jeux de société… ça dépend de mon humeur !",
+"Je choisis parfois un écran, parfois autre chose.",
+"Je choisis assez souvent une activité sur écran.",
+"Je vais presque toujours vers un écran."
+]],
+["À la fin d’une journée très chargée…",[
+"J’aime faire une pause sans écran.",
+"Un petit moment d’écran me fait du bien.",
+"J’ai tendance à rester longtemps devant un écran.",
+"Je peux passer une grande partie de ma soirée devant un écran."
+]],
+["Selon toi, ton écran prend quelle place dans ta vie ?",[
+"Une place utile parmi plein d’autres activités.",
+"Une place assez importante, mais je fais aussi beaucoup d’autres choses.",
+"Une place très importante dans mes journées.",
+"J’ai parfois l’impression que l’écran décide à ma place de ce que je fais."
+]]
+];
+
+let answers=[], current=0;
+const quiz=document.getElementById("quiz");
+
+function render(){
+  quiz.innerHTML="";
+  questions.forEach((q,i)=>{
+    const card=document.createElement("div");
+    card.className="qcard"+(i===0?" active":"");
+    card.innerHTML=`<div class="progress"><div class="bar" id="bar${i}"></div></div>
+      <div class="qnum">QUESTION ${i+1} / ${questions.length}</div>
+      <h2>${q[0]}</h2>
+      <div>${q[1].map((o,j)=>`<button class="option" data-i="${j}" onclick="choose(${i},${j})">${o}</button>`).join("")}</div>
+      <div class="nav">
+        <button class="back" onclick="prev()" ${i===0?"disabled":""}>← Retour</button>
+        <button class="next" id="next${i}" onclick="next()" disabled>${i===questions.length-1?"Voir mon résultat ✨":"Suivant →"}</button>
+      </div>`;
+    quiz.appendChild(card);
+  });
+  update();
+}
+function choose(q,v){
+  answers[q]=v;
+  document.querySelectorAll(`#quiz .qcard:nth-child(${q+1}) .option`).forEach((b,i)=>b.classList.toggle("selected",i===v));
+  document.getElementById("next"+q).disabled=false;
+}
+function update(){
+  document.querySelectorAll(".qcard").forEach((c,i)=>c.classList.toggle("active",i===current));
+  const bar=document.getElementById("bar"+current);
+  if(bar) bar.style.width=((current+1)/questions.length*100)+"%";
+}
+function next(){
+  if(answers[current]===undefined)return;
+  if(current<questions.length-1){current++;update();window.scrollTo({top:0,behavior:"smooth"});}
+  else showResult();
+}
+function prev(){if(current>0){current--;update();}}
+function showResult(){
+  let points=answers.reduce((a,b)=>a+b,0);
+  let title,emoji,text;
+  if(points<=10){
+    emoji="🧘"; title="L’ÉQUILIBRISTE DES ÉCRANS";
+    text="<strong>Ton super-pouvoir : garder les écrans à leur place.</strong> Tu sembles savoir profiter du numérique sans lui laisser toute la place. Continue à garder du temps pour dormir, bouger, apprendre, créer et passer du temps avec les autres.";
+  }else if(points<=19){
+    emoji="🙂"; title="LE/LA NAVIGATEUR·RICE TRANQUILLE";
+    text="<strong>Ton super-pouvoir : savoir faire des pauses.</strong> Les écrans ont une vraie place dans ton quotidien, mais tu sais aussi faire autre chose. Petit défi : choisis un moment de la journée où ton écran reste complètement de côté.";
+  }else if(points<=29){
+    emoji="📱"; title="LE/LA PETIT·E SCROLLER";
+    text="<strong>Ton super-pouvoir à entraîner : appuyer sur PAUSE.</strong> Tu sembles parfois te laisser embarquer par les écrans. Observe surtout les moments où tu perds la notion du temps. Un bon réflexe : décider à l’avance quand tu commences… et quand tu arrêtes.";
+  }else{
+    emoji="🚀"; title="ÉCRAN EN MODE TURBO";
+    text="<strong>Ton défi : reprendre les commandes.</strong> Tes réponses montrent que les écrans prennent beaucoup de place dans plusieurs moments de ta journée. Ça ne veut pas dire « problème » : c’est une occasion de tester quelques changements simples, notamment autour du sommeil, des devoirs et des repas.";
+  }
+  document.getElementById("rEmoji").textContent=emoji;
+  document.getElementById("rTitle").textContent=title;
+  document.getElementById("rScore").textContent=`Ton score d’habitudes numériques : ${points} / 30`;
+  document.getElementById("meter").style.width=(points/30*100)+"%";
+  document.getElementById("rText").innerHTML=text;
+  quiz.style.display="none";document.querySelector(".hero").style.display="none";document.getElementById("result").style.display="block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function restart(){
+  answers=[];current=0;
+  document.querySelector(".hero").style.display="block";
+  document.getElementById("result").style.display="none";
+  quiz.style.display="block";render();
+}
+render();
+</script>
+</body>
+</html>
